@@ -3,7 +3,8 @@ import requests
 import os
 import json
 from dotenv import load_dotenv
-from framework.handlers import call_ended, function_call,tool_call
+from tinydb import TinyDB
+from framework.handlers import call_ended, function_call,tool_call,onboarding_call_ended
 from framework.functions import call_function
 
 load_dotenv()  # Load environment variables from .env file
@@ -12,7 +13,8 @@ load_dotenv()  # Load environment variables from .env file
 app = Flask(__name__)
   # store securely
 
-
+db_customer=TinyDB("db/customers.json")
+db_conversation=TinyDB("db/conversations.json")
 
 
 
@@ -79,6 +81,30 @@ def tool_call():
     return jsonify(tool_response), 200
     
  
+ 
+@app.route("/2carehook_onboarding", methods=["POST"])
+def vapi_webhook_onboarding():
+    event = request.json
+    payload = event.get("message", {})
+    event_type = payload.get("type")
+    
+    print(f"📥 Received event: {event_type}")
+    if event_type == "call_started":
+        print(f"📞 Incoming call from {payload.get('from')} (ID: {payload.get('id')})")
+        
+    elif event_type == "function-call": 
+        function_call(event=event)
+    elif event_type == "end-of-call-report":
+        onboarding_call_ended(event=event)     
+
+    elif event_type == "tool-calls":
+        tool_call(event=event)
+    
+    elif event_type == "call_ended":
+        print(f"📴 Call ended. Summary: {payload.get('summary')}")
+        print("📜 Full transcript:", payload.get("transcript"))
+        
+    return jsonify({"status": "ok"}), 200
 
 
 
