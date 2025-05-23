@@ -15,24 +15,22 @@ class EmailContent(BaseModel):
 
 class EmailManager:
     """
-    EmailManager with Mailtrap for testing
+    EmailManager with custom SMTP provider
     """
     
     def __init__(self):
-        """Initialize EmailManager with Mailtrap configuration"""
-        self.smtp_server = os.getenv("SMTP_SERVER", "sandbox.smtp.mailtrap.io")
-        self.smtp_port = int(os.getenv("SMTP_PORT", "2525"))
-        self.username = os.getenv("MAILTRAP_USERNAME")  # Your mailtrap username
-        self.password = os.getenv("MAILTRAP_PASSWORD")  # Your mailtrap password
+        """Initialize EmailManager with custom SMTP configuration"""
+        self.smtp_server = os.getenv("SMTP_SERVER")
+        self.smtp_port = int(os.getenv("SMTP_PORT", "587"))
+        self.username = os.getenv("SMTP_USERNAME")
+        self.password = os.getenv("SMTP_PASSWORD")
+        self.use_tls = os.getenv("SMTP_USE_TLS", "true").lower() == "true"
         self.sender_name = os.getenv("SENDER_NAME", "TwoCare AI Team")
         self.sender_email = os.getenv("SENDER_EMAIL", "care@2care.ai")
         
         self.agent = Agent('openai:gpt-4', output_type=EmailContent)
         
-        # Validate configuration
-        if not self.username or not self.password:
-            print("❌ Please set MAILTRAP_USERNAME and MAILTRAP_PASSWORD in .env file")
-    
+       
     def generate_care_email(self, transcript: str) -> EmailContent:
         """Generate personalized care email content"""
         prompt = f"""
@@ -61,7 +59,7 @@ class EmailManager:
            - Keep it concise but comprehensive
            - Use HTML formatting for the email
 
-        5. **information**: Create a clean/clear list with the information collected be comprehensive about it.
+        5. **information**: Create a clean/clear list with the information collected. Be very comprehensive about it.
            
         6. **Additional Value**: Include 2-3 practical tips for remote caregiving or relevant resources. then include next steps.
 
@@ -72,7 +70,7 @@ class EmailManager:
         return result.output
     
     def send_email(self, recipient_email: str, subject: str, html_body: str) -> bool:
-        """Send email using Mailtrap SMTP"""
+        """Send email using custom SMTP provider"""
         try:
             # Create message
             message = MIMEMultipart("alternative")
@@ -84,14 +82,14 @@ class EmailManager:
             html_part = MIMEText(html_body, "html")
             message.attach(html_part)
             
-            # Send email via Mailtrap
+            # Send email via custom SMTP
             with smtplib.SMTP(self.smtp_server, self.smtp_port) as server:
-                server.starttls()
+                if self.use_tls:
+                    server.starttls()
                 server.login(self.username, self.password)
                 server.send_message(message)
             
             print(f"✅ Email sent successfully to {recipient_email}")
-            print("📧 Check your Mailtrap inbox to see the email!")
             return True
             
         except Exception as e:
@@ -108,13 +106,14 @@ class EmailManager:
             return False
     
     def test_connection(self) -> bool:
-        """Test Mailtrap connection"""
+        """Test SMTP connection"""
         try:
             with smtplib.SMTP(self.smtp_server, self.smtp_port) as server:
-                server.starttls()
+                if self.use_tls:
+                    server.starttls()
                 server.login(self.username, self.password)
-                print("✅ Mailtrap connection successful!")
+                print("✅ SMTP connection successful!")
                 return True
         except Exception as e:
-            print(f"❌ Mailtrap connection failed: {str(e)}")
+            print(f"❌ SMTP connection failed: {str(e)}")
             return False

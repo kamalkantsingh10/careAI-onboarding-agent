@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2Care Onboarding Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f8fffe 0%, #e8f7f5 100%);
+            color: #2c3e50;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .nav-tab {
+            flex: 1;
+            padding: 16px 24px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            color: #64748b;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+            color: white;
+        }
+
+        .nav-tab:hover:not(.active) {
+            background: #f1f5f9;
+            color: #0ea5e9;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border-left: 4px solid #0ea5e9;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #0ea5e9;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .customers-table {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        .table-header {
+            background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+            color: white;
+            padding: 20px 24px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .table-content {
+            /* Removed max-height and overflow-y to show all customers */
+        }
+
+        .customer-row {
+            padding: 20px 24px;
+            border-bottom: 1px solid #e2e8f0;
+            transition: background-color 0.2s ease;
+            cursor: pointer;
+        }
+
+        .customer-row:hover {
+            background: #f8fafc;
+        }
+
+        .customer-row:last-child {
+            border-bottom: none;
+        }
+
+        .customer-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .customer-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-complete {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-in-progress {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-interest {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .status-pending-onboarding {
+            background: #f3e8ff;
+            color: #7c3aed;
+        }
+
+        .customer-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 12px;
+        }
+
+        .detail-item {
+            font-size: 14px;
+        }
+
+        .detail-label {
+            color: #64748b;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .detail-value {
+            color: #1e293b;
+        }
+
+        .patient-section {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .patient-header {
+            color: #0ea5e9;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .medical-info {
+            background: #f8fafc;
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 12px;
+        }
+
+        .medical-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 12px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #64748b;
+        }
+
+        .error {
+            background: #fef2f2;
+            color: #dc2626;
+            padding: 16px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #dc2626;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 24px;
+            transition: border-color 0.3s ease;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #0ea5e9;
+        }
+
+        .refresh-btn {
+            background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: transform 0.2s ease;
+            margin-bottom: 20px;
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #64748b;
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 16px;
+            color: #cbd5e1;
+        }
+
+        .conversation-row {
+            padding: 20px 24px;
+            border-bottom: 1px solid #e2e8f0;
+            transition: background-color 0.2s ease;
+            cursor: pointer;
+        }
+
+        .conversation-row:hover {
+            background: #f8fafc;
+        }
+
+        .conversation-row:last-child {
+            border-bottom: none;
+        }
+
+        .conversation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .conversation-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .result-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .result-successful {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .result-failed {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+        .conversation-summary {
+            background: #f8fafc;
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 12px;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #475569;
+        }
+
+        .recording-link {
+            display: inline-block;
+            background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 500;
+            margin-top: 8px;
+            transition: transform 0.2s ease;
+        }
+
+        .recording-link:hover {
+            transform: translateY(-1px);
+            text-decoration: none;
+            color: white;
+        }
+
+        .accordion-toggle {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 8px;
+            margin-right: 8px;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .accordion-toggle:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .accordion-toggle.active {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            background: #f1f5f9;
+            border-radius: 8px;
+            margin-top: 12px;
+        }
+
+        .accordion-content.active {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .transcript-content {
+            padding: 20px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            margin: 16px;
+            color: #334155;
+        }
+
+        .transcript-header {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            color: white;
+            padding: 12px 20px;
+            margin: 16px 16px 0 16px;
+            border-radius: 6px 6px 0 0;
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ai-message {
+            color: #0ea5e9;
+            font-weight: 500;
+        }
+
+        .user-message {
+            color: #059669;
+            font-weight: 500;
+        }
+
+        .no-transcript {
+            padding: 20px;
+            text-align: center;
+            color: #64748b;
+            font-style: italic;
+        }
+
+        .chevron-icon {
+            transition: transform 0.2s ease;
+        }
+
+        .accordion-toggle.active .chevron-icon {
+            transform: rotate(180deg);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="switchTab('dashboard')">Dashboard</button>
+            <button class="nav-tab" onclick="switchTab('customers')">Customer Management</button>
+            <button class="nav-tab" onclick="switchTab('conversations')">Conversations</button>
+        </div>
+
+        <div id="dashboard" class="tab-content active">
+            <div class="dashboard-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="total-customers">0</div>
+                    <div class="stat-label">Total Customers</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="completed-onboarding">0</div>
+                    <div class="stat-label">Onboarding Complete</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="pending-onboarding">0</div>
+                    <div class="stat-label">Pending Onboarding</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="customers" class="tab-content">
+            <button class="refresh-btn" onclick="loadCustomers()">Refresh Data</button>
+            <input type="text" class="search-box" id="search-input" placeholder="Search customers by name, phone, or email..." onkeyup="filterCustomers()">
+            
+            <div class="customers-table">
+                <div class="table-header">Customer Records</div>
+                <div class="table-content" id="customers-list">
+                    <div class="loading">Loading customer data...</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="conversations" class="tab-content">
+            <button class="refresh-btn" onclick="loadConversations()">Refresh Conversations</button>
+            <input type="text" class="search-box" id="conversation-search-input" placeholder="Search conversations by name, agent, or purpose..." onkeyup="filterConversations()">
+            
+            <div class="customers-table">
+                <div class="table-header">Conversation Records</div>
+                <div class="table-content" id="conversations-list">
+                    <div class="loading">Loading conversation data...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let customersData = {};
+        let filteredCustomers = {};
+        let conversationsData = {};
+        let filteredConversations = {};
+
+        // Tab switching functionality
+        function switchTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all nav tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked nav tab
+            event.target.classList.add('active');
+            
+            // Load data when switching to customers tab
+            if (tabName === 'customers') {
+                loadCustomers();
+            } else if (tabName === 'conversations') {
+                loadConversations();
+            }
+        }
+
+        // Load customers data from Flask backend
+        async function loadCustomers() {
+            try {
+                const response = await fetch('/api/customers');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch customers');
+                }
+                
+                const data = await response.json();
+                customersData = data.customers || {};
+                filteredCustomers = customersData;
+                
+                updateDashboardStats();
+                renderCustomers();
+                
+            } catch (error) {
+                console.error('Error loading customers:', error);
+                document.getElementById('customers-list').innerHTML = 
+                    '<div class="error">Error loading customer data. Please check your connection and try again.</div>';
+            }
+        }
+
+        // Update dashboard statistics
+        function updateDashboardStats() {
+            const customers = Object.values(customersData);
+            const total = customers.length;
+            const completed = customers.filter(c => getStatusNormalized(c.status) === 'complete').length;
+            const pending = total - completed;
+
+            document.getElementById('total-customers').textContent = total;
+            document.getElementById('completed-onboarding').textContent = completed;
+            document.getElementById('pending-onboarding').textContent = pending;
+        }
+
+        // Render customers list
+        function renderCustomers() {
+            const customersList = document.getElementById('customers-list');
+            const customers = Object.values(filteredCustomers);
+            
+            if (customers.length === 0) {
+                customersList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">👥</div>
+                        <h3>No customers found</h3>
+                        <p>No customer records match your search criteria.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const customersHTML = customers.map(customer => {
+                const statusClass = getStatusClass(customer.status);
+                
+                return `
+                    <div class="customer-row">
+                        <div class="customer-header">
+                            <div class="customer-name">${safeGet(customer, 'customer_name') || safeGet(customer, 'name')}</div>
+                            <div class="status-badge ${statusClass}">${safeGet(customer, 'status', 'pending')}</div>
+                        </div>
+                        
+                        <div class="customer-details">
+                            <div class="detail-item">
+                                <div class="detail-label">Email</div>
+                                <div class="detail-value">${safeGet(customer, 'email')}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Phone</div>
+                                <div class="detail-value">${safeGet(customer, 'phone')}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Date of Birth</div>
+                                <div class="detail-value">${formatDate(customer.date_of_birth)}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Main Goal</div>
+                                <div class="detail-value">${safeGet(customer, 'main_goal')}</div>
+                            </div>
+                        </div>
+
+                        <div class="patient-section">
+                            <div class="patient-header">Patient Information: ${safeGet(customer, 'patient_name')}</div>
+                            <div class="customer-details">
+                                <div class="detail-item">
+                                    <div class="detail-label">Relationship</div>
+                                    <div class="detail-value">${safeGet(customer, 'relationship_to_customer')}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">Age</div>
+                                    <div class="detail-value">${safeGet(customer, 'age')}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">Address</div>
+                                    <div class="detail-value">${safeGet(customer, 'address')}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">Emergency Contact</div>
+                                    <div class="detail-value">${safeGet(customer, 'emergency_contact')}</div>
+                                </div>
+                            </div>
+                            
+                            <div class="medical-info">
+                                <div class="medical-grid">
+                                    <div class="detail-item">
+                                        <div class="detail-label">Conditions</div>
+                                        <div class="detail-value">${safeGet(customer, 'chronic_conditions') || safeGet(customer, 'condition_details', 'N/A')}</div>
+                                    </div>
+                                    <div class="detail-item">
+                                        <div class="detail-label">Medications</div>
+                                        <div class="detail-value">${safeGet(customer, 'current_medications')}</div>
+                                    </div>
+                                    <div class="detail-item">
+                                        <div class="detail-label">Medical Devices</div>
+                                        <div class="detail-value">${safeGet(customer, 'medical_devices') || safeGet(customer, 'monitoring_devices', 'N/A')}</div>
+                                    </div>
+                                    <div class="detail-item">
+                                        <div class="detail-label">Mental Health</div>
+                                        <div class="detail-value">${safeGet(customer, 'mental_health_status')}</div>
+                                    </div>
+                                    <div class="detail-item">
+                                        <div class="detail-label">Interested in 2Care</div>
+                                        <div class="detail-value">${safeGet(customer, 'interested_in_2care')}</div>
+                                    </div>
+                                    <div class="detail-item">
+                                        <div class="detail-label">Notes</div>
+                                        <div class="detail-value">${safeGet(customer, 'notes')}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            customersList.innerHTML = customersHTML;
+        }
+
+        // Get status CSS class
+        function getStatusClass(status) {
+            if (!status) return 'status-pending';
+            
+            const statusLower = status.toLowerCase();
+            if (statusLower.includes('complete')) return 'status-complete';
+            if (statusLower.includes('progress')) return 'status-in-progress';
+            if (statusLower.includes('interest')) return 'status-interest';
+            if (statusLower.includes('pending onboarding')) return 'status-pending-onboarding';
+            return 'status-pending';
+        }
+
+        // Normalize status for counting
+        function getStatusNormalized(status) {
+            if (!status) return 'pending';
+            
+            const statusLower = status.toLowerCase();
+            if (statusLower.includes('complete')) return 'complete';
+            return 'pending';
+        }
+
+        // Safe get value with fallback
+        function safeGet(obj, key, fallback = 'N/A') {
+            const value = obj && obj[key];
+            return (value !== undefined && value !== null && value !== '') ? value : fallback;
+        }
+
+        // Format date
+        function formatDate(dateStr) {
+            if (!dateStr) return 'N/A';
+            
+            // Handle DDMMYYYY format
+            if (dateStr.length === 8 && !dateStr.includes('-')) {
+                const day = dateStr.substring(0, 2);
+                const month = dateStr.substring(2, 4);
+                const year = dateStr.substring(4, 8);
+                return `${day}/${month}/${year}`;
+            }
+            
+            return dateStr;
+        }
+
+        // Filter customers based on search
+        function filterCustomers() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            
+            if (!searchTerm) {
+                filteredCustomers = customersData;
+            } else {
+                filteredCustomers = {};
+                Object.keys(customersData).forEach(key => {
+                    const customer = customersData[key];
+                    const searchableText = [
+                        customer.customer_name,
+                        customer.name,
+                        customer.email,
+                        customer.phone,
+                        customer.patient_name
+                    ].filter(Boolean).join(' ').toLowerCase();
+                    
+                    if (searchableText.includes(searchTerm)) {
+                        filteredCustomers[key] = customer;
+                    }
+                });
+            }
+            
+            renderCustomers();
+        }
+
+        // Load conversations data from Flask backend
+        async function loadConversations() {
+            try {
+                const response = await fetch('/api/conversations');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch conversations');
+                }
+                
+                const data = await response.json();
+                conversationsData = data.conversations || {};
+                filteredConversations = conversationsData;
+                
+                renderConversations();
+                
+            } catch (error) {
+                console.error('Error loading conversations:', error);
+                document.getElementById('conversations-list').innerHTML = 
+                    '<div class="error">Error loading conversation data. Please check your connection and try again.</div>';
+            }
+        }
+
+        // Render conversations list
+        function renderConversations() {
+            const conversationsList = document.getElementById('conversations-list');
+            const conversations = Object.values(filteredConversations);
+            
+            // Sort conversations by ID in descending order (newest first)
+            conversations.sort((a, b) => {
+                const idA = parseInt(a.id) || 0;
+                const idB = parseInt(b.id) || 0;
+                return idB - idA; // Descending order
+            });
+            
+            if (conversations.length === 0) {
+                conversationsList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">💬</div>
+                        <h3>No conversations found</h3>
+                        <p>No conversation records match your search criteria.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const conversationsHTML = conversations.map(conversation => {
+                const resultClass = getResultClass(conversation.result);
+                
+                return `
+                    <div class="conversation-row">
+                        <div class="conversation-header">
+                            <div class="conversation-name">${safeGet(conversation, 'name')}</div>
+                            <div class="result-badge ${resultClass}">${safeGet(conversation, 'result', 'unknown')}</div>
+                        </div>
+                        
+                        <div class="customer-details">
+                            <div class="detail-item">
+                                <div class="detail-label">ID</div>
+                                <div class="detail-value">${safeGet(conversation, 'id')}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Purpose</div>
+                                <div class="detail-value">${safeGet(conversation, 'purpose')}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Agent</div>
+                                <div class="detail-value">${safeGet(conversation, 'agent')}</div>
+                            </div>
+                        </div>
+
+                        ${conversation.summary ? `
+                            <div class="conversation-summary">
+                                <strong>Summary:</strong><br>
+                                ${safeGet(conversation, 'summary')}
+                            </div>
+                        ` : ''}
+
+                        ${conversation.recording ? `
+                            <a href="${conversation.recording}" target="_blank" class="recording-link">
+                                🎵 Listen to Recording
+                            </a>
+                        ` : ''}
+
+                        ${conversation.transcript ? `
+                            <button class="accordion-toggle" onclick="toggleTranscript('${conversation.id}')">
+                                <span>📝 View Transcript</span>
+                                <span class="chevron-icon">▼</span>
+                            </button>
+                            <div class="accordion-content" id="transcript-${conversation.id}">
+                                <div class="transcript-header">
+                                    <span>📄</span>
+                                    <span>Full Conversation Transcript</span>
+                                </div>
+                                <div class="transcript-content">${formatTranscript(conversation.transcript)}</div>
+                            </div>
+                        ` : conversation.summary ? '' : `
+                            <div class="no-transcript">
+                                <em>No transcript available for this conversation</em>
+                            </div>
+                        `}
+                    </div>
+                `;
+            }).join('');
+
+            conversationsList.innerHTML = conversationsHTML;
+        }
+
+        // Get result CSS class
+        function getResultClass(result) {
+            if (!result) return 'result-failed';
+            
+            const resultLower = result.toLowerCase();
+            if (resultLower.includes('successful')) return 'result-successful';
+            return 'result-failed';
+        }
+
+        // Filter conversations based on search
+        function filterConversations() {
+            const searchTerm = document.getElementById('conversation-search-input').value.toLowerCase();
+            
+            if (!searchTerm) {
+                filteredConversations = conversationsData;
+            } else {
+                filteredConversations = {};
+                Object.keys(conversationsData).forEach(key => {
+                    const conversation = conversationsData[key];
+                    const searchableText = [
+                        conversation.name,
+                        conversation.agent,
+                        conversation.purpose,
+                        conversation.summary
+                    ].filter(Boolean).join(' ').toLowerCase();
+                    
+                    if (searchableText.includes(searchTerm)) {
+                        filteredConversations[key] = conversation;
+                    }
+                });
+            }
+            
+            renderConversations();
+        }
+
+        // Toggle transcript accordion
+        function toggleTranscript(conversationId) {
+            const accordionContent = document.getElementById(`transcript-${conversationId}`);
+            const toggleButton = accordionContent.previousElementSibling;
+            
+            if (accordionContent.classList.contains('active')) {
+                accordionContent.classList.remove('active');
+                toggleButton.classList.remove('active');
+            } else {
+                // Close all other open transcripts
+                document.querySelectorAll('.accordion-content.active').forEach(content => {
+                    content.classList.remove('active');
+                    content.previousElementSibling.classList.remove('active');
+                });
+                
+                // Open this transcript
+                accordionContent.classList.add('active');
+                toggleButton.classList.add('active');
+            }
+        }
+
+        // Format transcript for better readability
+        function formatTranscript(transcript) {
+            if (!transcript) return '<em>No transcript available</em>';
+            
+            // Split transcript into lines and format AI vs User messages
+            const lines = transcript.split('\n');
+            let formattedTranscript = '';
+            
+            lines.forEach(line => {
+                if (line.trim()) {
+                    if (line.startsWith('AI:')) {
+                        formattedTranscript += `<span class="ai-message">${line}</span>\n`;
+                    } else if (line.startsWith('User:')) {
+                        formattedTranscript += `<span class="user-message">${line}</span>\n`;
+                    } else {
+                        formattedTranscript += `${line}\n`;
+                    }
+                }
+            });
+            
+            return formattedTranscript || transcript;
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCustomers();
+        });
+    </script>
+</body>
+</html>

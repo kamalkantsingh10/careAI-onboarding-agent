@@ -8,15 +8,18 @@ from tinydb.middlewares import CachingMiddleware
 import os
 
 from data.structure import BasicInfo, Conversation, Customer, DetailedInfo
-from run_server import db_customer, db_conversation
 
 
+# Database setup
+db_customer = TinyDB("db/customers.json")
+table_customer= db_customer.table('customers')
+db_conversation = TinyDB("db/conversations.json")
+table_converstaions= db_conversation.table('conversations')
 
 
 class CustomerDB:
     def __init__(self):
-        self.db = db_customer
-        self.customers = self.db.table('customers')
+        self.customers = table_customer
         print(f"Database initialized")
     
     def add_customer(self, customer: Customer):
@@ -154,9 +157,7 @@ class CustomerDB:
 
 class ConversationDB:
     def __init__(self):
-      
-        self.db = db_conversation
-        self.conversations = self.db.table('conversations')
+        self.conversations = table_converstaions
         print(f"Conversation database initialized")
     
     def add_conversation(self, conversation: Conversation):
